@@ -1,7 +1,21 @@
 import pygame
+import  os
 
-size = width, height = 800, 400
+size = width, height = 800, 800
 screen = pygame.display.set_mode(size)
+
+
+def load_image(name, color_key=None):
+    fullname = os.path.join('imgs', name)
+    image = pygame.image.load(fullname).convert()
+
+    if color_key is not None:
+        if color_key == -1:
+            color_key = image.get_at((0, 0))
+        image.set_colorkey(color_key)
+    else:
+        image = image.convert_alpha()
+    return image
 
 
 class Board:
@@ -36,7 +50,7 @@ class Board:
                                       self.cell_size, self.cell_size), 1)
 
     def get_cell(self, mouse_pos):
-        x, y = int((mouse_pos[0] - self.left) / self.cell_size),\
+        x, y = int((mouse_pos[0] - self.left) / self.cell_size), \
                int((mouse_pos[1] - self.top) / self.cell_size)
         return x, y
 
@@ -52,8 +66,9 @@ class Board:
             self.on_click(cell)
 
 
-board = Board(4, 3)
-board.set_view(100, 100, 50)
+board = Board(3, 3)
+board.set_view(200, 200, 100)
+character_image = load_image("character.png")
 running = True
 while running:
     for event in pygame.event.get():
