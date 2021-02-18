@@ -20,7 +20,7 @@ def load_image(name, color_key=None):
     return image
 
 
-board = Board(5, 5)
+board = Board(3, 3)
 image = load_image("character.png")
 Player = Character(image, 2, 2, all_sprites)
 board.set_view(Board.X, Board.Y, Board.SIZE)
@@ -30,9 +30,11 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
-            cell = board.get_click(event.pos, Player)
+            cell = board.get_cell(mouse_pos=pygame.mouse.get_pos())
             if cell:
-                Player.move(cell[0], cell[1])
+                if Player.move(cell[0], cell[1]):
+                    board.get_click(pygame.mouse.get_pos(), Player)
+
     screen.fill((0, 0, 0))
     board.render(screen)
     all_sprites.draw(screen)

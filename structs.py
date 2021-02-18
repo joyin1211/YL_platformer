@@ -41,6 +41,7 @@ class Board:
                                  (self.left + x * self.cell_size,
                                   self.top + y * self.cell_size,
                                   self.cell_size, self.cell_size), 1)
+                print(self.board[y][x])
                 pass
 
     def get_cell(self, mouse_pos):
@@ -52,10 +53,6 @@ class Board:
         return None
 
     def on_click(self, cell, new_thing):
-        if self.board[cell[1]][cell[0]] == 0:
-            self.board[cell[1]][cell[0]] = 1
-        else:
-            self.board[cell[1]][cell[0]] = 0
         self.board[cell[1]][cell[0]] = new_thing
 
     def get_click(self, mouse_pos, thing):
@@ -85,7 +82,10 @@ class Character(pygame.sprite.Sprite):
             self.cellx = coor1
             self.rect.x = Board.X + self.cellx * Board.SIZE
             self.rect.y = Board.Y + self.celly * Board.SIZE
+            return True
         elif coor1 == self.cellx and abs(coor2 - self.celly) == 1:
             self.celly = coor2
             self.rect.x = Board.X + self.cellx * Board.SIZE
             self.rect.y = Board.Y + self.celly * Board.SIZE
+            return True
+        return False
