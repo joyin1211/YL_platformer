@@ -1,11 +1,17 @@
 import pygame
 import random
 import os
-
+from Game import Game
 size = width, height = 800, 800
 screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
 
+
+g = Game()
+
+while g.running:
+    g.curr_menu.display_menu()
+    g.game_loop()
 
 class Board:
     # создание поля
