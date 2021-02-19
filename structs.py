@@ -66,7 +66,7 @@ class Board:
         return cell
 
 
-class Character(pygame.sprite.Sprite):
+class GameObject(pygame.sprite.Sprite):
     def __init__(self, image, cellx, celly, *group):
         self.image = image
         super().__init__(*group)
@@ -76,6 +76,11 @@ class Character(pygame.sprite.Sprite):
                                 Board.Y + celly * Board.SIZE, Board.SIZE, Board.SIZE)
         self.rect.x = Board.X + cellx * Board.SIZE
         self.rect.y = Board.Y + celly * Board.SIZE
+
+
+class Character(GameObject):
+    def __init__(self, image, cellx, celly, *group):
+        super().__init__(image, cellx, celly, group)
         self.atk = 1
         self.hp = 10
         self.mana = 5
@@ -93,3 +98,16 @@ class Character(pygame.sprite.Sprite):
             self.rect.y = Board.Y + self.celly * Board.SIZE
             return True
         return False
+
+
+class Item(GameObject):
+    def __init__(self, image, cellx, celly, *group):
+        super().__init__(image, cellx, celly, group)
+
+
+class Potion(Item):
+    def __init__(self, image, cellx, celly, buffs, *group):
+        super().__init__(image, cellx, celly)
+        self.manabuf = buffs['mana']
+        self.attackbuf = buffs['attack']
+        self.hpbuf = buffs['hp']
