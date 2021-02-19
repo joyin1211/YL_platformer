@@ -1,10 +1,111 @@
 import pygame
-from structs import Board, Character, GameObject, Potion, Item
+import random
 import os
 
 size = width, height = 800, 800
 screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
+
+
+class Board:
+    # создание поля
+    SIZE = 100
+    X = 150
+    Y = 150
+
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.board = [[0] * width for _ in range(height)]
+        # значения по умолчанию
+        self.left = 10
+        self.top = 10
+        self.cell_size = 30
+
+    # настройка внешнего вида
+    def set_view(self, left, top, cell_size):
+        self.left = left
+        self.top = top
+        self.cell_size = cell_size
+
+    def render(self, screen):
+        for x in range(self.width):
+            for y in range(self.height):
+                pygame.draw.rect(screen, (255, 255, 255),
+                                 (self.left + x * self.cell_size,
+                                  self.top + y * self.cell_size,
+                                  self.cell_size, self.cell_size), 1)
+                pass
+
+    def get_cell(self, mouse_pos):
+        if self.left <= mouse_pos[0] <= self.left + self.cell_size * self.width and \
+                self.top <= mouse_pos[1] <= self.top + self.cell_size * self.height:
+            x, y = int((mouse_pos[0] - self.left) / self.cell_size), \
+                   int((mouse_pos[1] - self.top) / self.cell_size)
+            return x, y
+        return None
+
+    def on_click(self, cell, new_thing):
+        coors = new_thing.cellx, new_thing.celly
+        if new_thing.move(cell[0], cell[1]):
+            if type(self.board[cell[1]][cell[0]]) == Food:
+                all_sprites.remove(self.board[cell[1]][cell[0]])
+                new_thing.hp = min(new_thing.hp + self.board[cell[1]][cell[0]].hpbuf, Character.MAX_HP)
+            self.board[cell[1]][cell[0]] = new_thing
+            self.board[coors[1]][coors[0]] = 0
+
+    def get_click(self, mouse_pos, thing):
+        cell = self.get_cell(mouse_pos)
+        if cell:
+            self.on_click(cell, thing)
+        return cell
+
+
+class GameObject(pygame.sprite.Sprite):
+    def __init__(self, image, cellx, celly, *group):
+        self.image = image
+        super().__init__(*group)
+        self.cellx = cellx
+        self.celly = celly
+        self.rect = pygame.Rect(Board.X + cellx * Board.SIZE,
+                                Board.Y + celly * Board.SIZE, Board.SIZE, Board.SIZE)
+        self.rect.x = Board.X + cellx * Board.SIZE
+        self.rect.y = Board.Y + celly * Board.SIZE
+
+
+class Character(GameObject):
+    MAX_HP = 100
+
+    def __init__(self, image, cellx, celly, board, *group):
+        super().__init__(image, cellx, celly, group)
+        self.atk = 1
+        self.hp = 10
+        self.mana = 5
+        self.gold = 0
+        board.board[celly][cellx] = self
+        pass
+
+    def move(self, coor1, coor2):
+        if coor2 == self.celly and abs(coor1 - self.cellx) == 1:
+            self.cellx = coor1
+            self.rect.x = Board.X + self.cellx * Board.SIZE
+            self.rect.y = Board.Y + self.celly * Board.SIZE
+            return True
+        elif coor1 == self.cellx and abs(coor2 - self.celly) == 1:
+            self.celly = coor2
+            self.rect.x = Board.X + self.cellx * Board.SIZE
+            self.rect.y = Board.Y + self.celly * Board.SIZE
+            return True
+        return False
+
+
+class Food(GameObject):
+    def __init__(self, image, cellx, celly, buffs, board, *group):
+        super().__init__(image, cellx, celly, group)
+        self.manabuf = buffs['mana']
+        self.attackbuf = buffs['attack']
+        self.hpbuf = buffs['hp']
+        board.board[celly][cellx] = self
 
 
 def load_image(name, color_key=None):
@@ -22,9 +123,13 @@ def load_image(name, color_key=None):
 
 board = Board(3, 3)
 image = load_image("character.png")
-Player = Character(image, 1, 2, all_sprites)
+food_images = [load_image("croissant.png")]
+Player = Character(image, 1, 2, board, all_sprites)
+BUFF = {'mana': 0, 'hp': 10, 'attack': 0}
+Croisant = Food(random.choice(food_images), 0, 0, BUFF, board, all_sprites)
 board.set_view(Board.X, Board.Y, Board.SIZE)
 running = True
+print(board.board[0][0])
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -33,7 +138,7 @@ while running:
             cell = board.get_cell(mouse_pos=pygame.mouse.get_pos())
             if cell:
                 board.get_click(pygame.mouse.get_pos(), Player)
-
+                print(Player.hp)
     screen.fill((0, 0, 0))
     board.render(screen)
     all_sprites.draw(screen)
