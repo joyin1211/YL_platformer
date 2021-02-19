@@ -93,3 +93,15 @@ class Character(pygame.sprite.Sprite):
             self.rect.y = Board.Y + self.celly * Board.SIZE
             return True
         return False
+
+
+class Item(pygame.sprite.Sprite):
+    def __init__(self, image, cellx, celly, *group):
+        self.image = image
+        super().__init__(*group)
+        self.cellx = cellx
+        self.celly = celly
+        self.rect = pygame.Rect(Board.X + cellx * Board.SIZE,
+                                Board.Y + celly * Board.SIZE, Board.SIZE, Board.SIZE)
+        self.rect.x = Board.X + cellx * Board.SIZE
+        self.rect.y = Board.Y + celly * Board.SIZE
