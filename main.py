@@ -2,9 +2,18 @@ import pygame
 import random
 import os
 
+from Game import Game
+
 size = width, height = 800, 800
 screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
+IS_GAME_OVER = False
+IS_GAME_STARTED = False
+g = Game()
+pygame.font.init()
+while g.running:
+    g.curr_menu.display_menu()
+    g.game_loop()
 
 
 class Board:
@@ -46,14 +55,32 @@ class Board:
         return None
 
     def on_click(self, cell, new_thing):
+        global IS_GAME_OVER
         coors = new_thing.cellx, new_thing.celly
         if new_thing.move(cell[0], cell[1]):
-            all_sprites.remove(self.board[cell[1]][cell[0]])
-            new_thing.hp = min(new_thing.hp + self.board[cell[1]][cell[0]].hpbuf, Character.MAX_HP)
-            self.board[cell[1]][cell[0]] = new_thing
-            self.board[coors[1]][coors[0]] = 0
-            print(coors)
-            return coors
+            if type(self.board[cell[1]][cell[0]]) != Enemy:
+                all_sprites.remove(self.board[cell[1]][cell[0]])
+                new_thing.hp = min(new_thing.hp + self.board[cell[1]][cell[0]].hpbuf, Character.MAX_HP)
+                new_thing.atk = new_thing.hp + self.board[cell[1]][cell[0]].attackbuf
+                self.board[cell[1]][cell[0]] = new_thing
+                self.board[coors[1]][coors[0]] = 0
+                return coors
+            else:
+                if new_thing.atk >= self.board[cell[1]][cell[0]].hp:
+                    new_thing.gold += self.board[cell[1]][cell[0]].gold
+                    new_thing.hp -= self.board[cell[1]][cell[0]].atk
+                    if new_thing.hp <= 0:
+                        IS_GAME_OVER = True
+                    all_sprites.remove(self.board[cell[1]][cell[0]])
+                    self.board[cell[1]][cell[0]] = new_thing
+                    self.board[coors[1]][coors[0]] = 0
+                    return coors
+                else:
+                    new_thing.hp -= self.board[cell[1]][cell[0]].atk
+                    if new_thing.hp <= 0:
+                        IS_GAME_OVER = True
+                    new_thing.move(coors[0], coors[1])
+                    return None
         return None
 
     def get_click(self, mouse_pos, thing):
@@ -109,6 +136,14 @@ class Food(GameObject):
         board.board[celly][cellx] = self
 
 
+class Weapon(GameObject):
+    def __init__(self, image, cellx, celly, buffs, board, *group):
+        super().__init__(image, cellx, celly, group)
+        self.attackbuf = buffs['attack']
+        self.hpbuf = buffs['hp']
+        board.board[celly][cellx] = self
+
+
 class Enemy(GameObject):
     def __init__(self, image, cellx, celly, atk, hp, gold, board, *group):
         super().__init__(image, cellx, celly, group)
@@ -135,16 +170,27 @@ board = Board(5, 5)
 image = load_image("character.png")
 food_images = [load_image("croissant.png"), load_image("beet.png"),
                load_image("beer.png"), load_image("ginger.png")]
-enemy_stats = []
+weapon_images = [load_image("katana.png"), load_image("bone-knife.png")]
+enemy_stats = [(load_image("gorilla.png"), 3, 1, 7),
+               (load_image("mantis.png"), 2, 5, 7)]
 Player = Character(image, 1, 2, board, all_sprites)
 board.set_view(Board.X, Board.Y, Board.SIZE)
+myfont = pygame.font.SysFont('Comic Sans MS', 30)
 running = True
 for i in range(board.height):
     for j in range(board.width):
         if i == 1 and j == 2:
             continue
-        BUFF = {'hp': random.randint(1, 10), 'attack': 0}
-        Food(random.choice(food_images), i, j, BUFF, board, all_sprites)
+        choose_type = random.randint(1, 3)
+        if choose_type == 1:
+            BUFF = {'hp': random.randint(1, 5), 'attack': 0}
+            Food(random.choice(food_images), i, j, BUFF, board, all_sprites)
+        elif choose_type == 2:
+            result = random.choice(enemy_stats)
+            Enemy(result[0], i, j, result[1], result[2], result[3], board, all_sprites)
+        else:
+            BUFF = {'hp': 0, 'attack': random.randint(1, 5)}
+            Food(random.choice(weapon_images), i, j, BUFF, board, all_sprites)
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -154,10 +200,26 @@ while running:
             if cell:
                 result = board.get_click(pygame.mouse.get_pos(), Player)
                 if result:
-                    BUFF = {'hp': random.randint(1, 5), 'attack': 0}
-                    Food(random.choice(food_images), result[0], result[1], BUFF, board, all_sprites)
-                print(Player.hp)
+                    choose_type = random.randint(1, 3)
+                    if choose_type == 1:
+                        BUFF = {'hp': random.randint(1, 5), 'attack': 0}
+                        Food(random.choice(food_images), result[0], result[1], BUFF, board, all_sprites)
+                    elif choose_type == 2:
+                        reslt = random.choice(enemy_stats)
+                        Enemy(reslt[0], result[0], result[1], reslt[1], reslt[2], reslt[3], board, all_sprites)
+                    else:
+                        BUFF = {'hp': 0, 'attack': random.randint(1, 5)}
+                        Food(random.choice(weapon_images), result[0], result[1], BUFF, board, all_sprites)
     screen.fill((0, 0, 0))
-    board.render(screen)
-    all_sprites.draw(screen)
-    pygame.display.flip()
+    if IS_GAME_OVER:
+        exit(0)
+    else:
+        board.render(screen)
+        all_sprites.draw(screen)
+        textsurface = myfont.render("HP: {}".format(str(Player.hp)), False, (255, 255, 255))
+        textsurface1 = myfont.render("ATK: {}".format(str(Player.atk)), False, (255, 255, 255))
+        textsurface2 = myfont.render("GOLD: {}".format(str(Player.gold)), False, (255, 255, 255))
+        screen.blit(textsurface, (0, 0))
+        screen.blit(textsurface1, (0, 30))
+        screen.blit(textsurface2, (0, 60))
+        pygame.display.flip()
