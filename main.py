@@ -104,9 +104,17 @@ class Character(GameObject):
 class Food(GameObject):
     def __init__(self, image, cellx, celly, buffs, board, *group):
         super().__init__(image, cellx, celly, group)
-        self.manabuf = buffs['mana']
         self.attackbuf = buffs['attack']
         self.hpbuf = buffs['hp']
+        board.board[celly][cellx] = self
+
+
+class Enemy(GameObject):
+    def __init__(self, image, cellx, celly, atk, hp, gold, board, *group):
+        super().__init__(image, cellx, celly, group)
+        self.atk = atk
+        self.hp = hp
+        self.gold = gold
         board.board[celly][cellx] = self
 
 
@@ -127,6 +135,7 @@ board = Board(5, 5)
 image = load_image("character.png")
 food_images = [load_image("croissant.png"), load_image("beet.png"),
                load_image("beer.png"), load_image("ginger.png")]
+enemy_stats = []
 Player = Character(image, 1, 2, board, all_sprites)
 board.set_view(Board.X, Board.Y, Board.SIZE)
 running = True
@@ -134,7 +143,7 @@ for i in range(board.height):
     for j in range(board.width):
         if i == 1 and j == 2:
             continue
-        BUFF = {'mana': 0, 'hp': random.randint(1, 10), 'attack': 0}
+        BUFF = {'hp': random.randint(1, 10), 'attack': 0}
         Food(random.choice(food_images), i, j, BUFF, board, all_sprites)
 while running:
     for event in pygame.event.get():
@@ -145,7 +154,7 @@ while running:
             if cell:
                 result = board.get_click(pygame.mouse.get_pos(), Player)
                 if result:
-                    BUFF = {'mana': 0, 'hp': random.randint(1, 10), 'attack': 0}
+                    BUFF = {'hp': random.randint(1, 5), 'attack': 0}
                     Food(random.choice(food_images), result[0], result[1], BUFF, board, all_sprites)
                 print(Player.hp)
     screen.fill((0, 0, 0))
