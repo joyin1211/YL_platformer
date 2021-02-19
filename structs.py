@@ -41,7 +41,6 @@ class Board:
                                  (self.left + x * self.cell_size,
                                   self.top + y * self.cell_size,
                                   self.cell_size, self.cell_size), 1)
-                print(self.board[y][x])
                 pass
 
     def get_cell(self, mouse_pos):
@@ -53,7 +52,12 @@ class Board:
         return None
 
     def on_click(self, cell, new_thing):
-        self.board[cell[1]][cell[0]] = new_thing
+        coors = new_thing.cellx, new_thing.celly
+        if new_thing.move(cell[0], cell[1]):
+            self.board[cell[1]][cell[0]] = new_thing
+            print(cell[0], cell[1])
+            self.board[coors[1]][coors[0]] = 0
+            print(self.board)
 
     def get_click(self, mouse_pos, thing):
         cell = self.get_cell(mouse_pos)
