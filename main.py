@@ -1,5 +1,5 @@
 import pygame
-from structs import Board, Character
+from structs import Board, Character, GameObject, Potion, Item
 import os
 
 size = width, height = 800, 800

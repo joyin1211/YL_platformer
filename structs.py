@@ -100,6 +100,7 @@ class Character(GameObject):
         return False
 
 
+
 class Item(GameObject):
     def __init__(self, image, cellx, celly, *group):
         super().__init__(image, cellx, celly, group)
@@ -111,3 +112,15 @@ class Potion(Item):
         self.manabuf = buffs['mana']
         self.attackbuf = buffs['attack']
         self.hpbuf = buffs['hp']
+
+class Item(pygame.sprite.Sprite):
+    def __init__(self, image, cellx, celly, *group):
+        self.image = image
+        super().__init__(*group)
+        self.cellx = cellx
+        self.celly = celly
+        self.rect = pygame.Rect(Board.X + cellx * Board.SIZE,
+                                Board.Y + celly * Board.SIZE, Board.SIZE, Board.SIZE)
+        self.rect.x = Board.X + cellx * Board.SIZE
+        self.rect.y = Board.Y + celly * Board.SIZE
+
