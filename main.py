@@ -67,10 +67,10 @@ class GameObject(pygame.sprite.Sprite):
         super().__init__(*group)
         self.cellx = cellx
         self.celly = celly
-        self.rect = pygame.Rect(Board.X + cellx * Board.SIZE,
-                                Board.Y + celly * Board.SIZE, Board.SIZE, Board.SIZE)
-        self.rect.x = Board.X + cellx * Board.SIZE
-        self.rect.y = Board.Y + celly * Board.SIZE
+        self.rect = pygame.Rect(Board.X + cellx * Board.SIZE + 1,
+                                Board.Y + celly * Board.SIZE + 1, Board.SIZE, Board.SIZE)
+        self.rect.x = Board.X + cellx * Board.SIZE + 1
+        self.rect.y = Board.Y + celly * Board.SIZE + 1
 
 
 class Character(GameObject):
@@ -123,13 +123,18 @@ def load_image(name, color_key=None):
 
 board = Board(3, 3)
 image = load_image("character.png")
-food_images = [load_image("croissant.png")]
+food_images = [load_image("croissant.png"), load_image("beet.png"),
+               load_image("beer.png"), load_image("ginger.png")]
 Player = Character(image, 1, 2, board, all_sprites)
-BUFF = {'mana': 0, 'hp': 10, 'attack': 0}
-Croisant = Food(random.choice(food_images), 0, 0, BUFF, board, all_sprites)
 board.set_view(Board.X, Board.Y, Board.SIZE)
 running = True
-print(board.board[0][0])
+for i in range(board.height):
+    for j in range(board.width):
+        if i == 1 and j == 2:
+            continue
+        #print(i, j)
+        BUFF = {'mana': 0, 'hp': random.randint(1, 10), 'attack': 0}
+        Food(random.choice(food_images), i, j, BUFF, board, all_sprites)
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
