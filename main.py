@@ -48,17 +48,19 @@ class Board:
     def on_click(self, cell, new_thing):
         coors = new_thing.cellx, new_thing.celly
         if new_thing.move(cell[0], cell[1]):
-            if type(self.board[cell[1]][cell[0]]) == Food:
-                all_sprites.remove(self.board[cell[1]][cell[0]])
-                new_thing.hp = min(new_thing.hp + self.board[cell[1]][cell[0]].hpbuf, Character.MAX_HP)
+            all_sprites.remove(self.board[cell[1]][cell[0]])
+            new_thing.hp = min(new_thing.hp + self.board[cell[1]][cell[0]].hpbuf, Character.MAX_HP)
             self.board[cell[1]][cell[0]] = new_thing
             self.board[coors[1]][coors[0]] = 0
+            print(coors)
+            return coors
+        return None
 
     def get_click(self, mouse_pos, thing):
         cell = self.get_cell(mouse_pos)
         if cell:
-            self.on_click(cell, thing)
-        return cell
+            return self.on_click(cell, thing)
+        return None
 
 
 class GameObject(pygame.sprite.Sprite):
@@ -121,7 +123,7 @@ def load_image(name, color_key=None):
     return image
 
 
-board = Board(3, 3)
+board = Board(5, 5)
 image = load_image("character.png")
 food_images = [load_image("croissant.png"), load_image("beet.png"),
                load_image("beer.png"), load_image("ginger.png")]
@@ -132,7 +134,6 @@ for i in range(board.height):
     for j in range(board.width):
         if i == 1 and j == 2:
             continue
-        #print(i, j)
         BUFF = {'mana': 0, 'hp': random.randint(1, 10), 'attack': 0}
         Food(random.choice(food_images), i, j, BUFF, board, all_sprites)
 while running:
@@ -142,7 +143,10 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             cell = board.get_cell(mouse_pos=pygame.mouse.get_pos())
             if cell:
-                board.get_click(pygame.mouse.get_pos(), Player)
+                result = board.get_click(pygame.mouse.get_pos(), Player)
+                if result:
+                    BUFF = {'mana': 0, 'hp': random.randint(1, 10), 'attack': 0}
+                    Food(random.choice(food_images), result[0], result[1], BUFF, board, all_sprites)
                 print(Player.hp)
     screen.fill((0, 0, 0))
     board.render(screen)
