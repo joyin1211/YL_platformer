@@ -23,7 +23,7 @@ class Game():
             if self.START_KEY:
                 self.playing = False
             self.display.fill(self.BLACK)
-            self.draw_text('Thanks for Playing', 20, self.DISPLAY_W / 2, self.DISPLAY_H / 2)
+            self.draw_text('press "p" to start game!', 20, self.DISPLAY_W / 2, self.DISPLAY_H / 2)
             self.window.blit(self.display, (0, 0))
             pygame.display.update()
             self.reset_keys()
@@ -34,6 +34,9 @@ class Game():
                 self.running, self.playing = False, False
                 self.curr_menu.run_display = False
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    self.running, self.playing = False, False
+                    self.curr_menu.run_display = False
                 if event.key == pygame.K_RETURN:
                     self.START_KEY = True
                 if event.key == pygame.K_BACKSPACE:

@@ -2,7 +2,6 @@ import pygame
 import random
 import os
 
-from Game import Game
 
 from Game import Game
 
@@ -11,14 +10,9 @@ screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
 IS_GAME_OVER = False
 IS_GAME_STARTED = False
+
 g = Game()
 pygame.font.init()
-while g.running:
-    g.curr_menu.display_menu()
-    g.game_loop()
-
-g = Game()
-
 while g.running:
     g.curr_menu.display_menu()
     g.game_loop()
